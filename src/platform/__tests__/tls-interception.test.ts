@@ -45,6 +45,38 @@ describe('findInterceptionCerts', () => {
     assert.deepEqual(vendors, ['Zscaler'])
   })
 
+  // 上面那条用的是同一厂商的 8 张证书，所以「vendors 被展示上限一起卡掉」这个缺陷它测不出来：
+  // 8 张全命中 Zscaler，去重后无论卡不卡都是 ['Zscaler']。真实系统证书存储里多个拦截产品
+  // 并存是常态，而 getCACertificates('system') 的返回顺序由 OS 决定，不由我们决定。
+  it('厂商清单不受展示上限影响——排在第 6 张之后的软件也要被点名', () => {
+    const mixed = [
+      ...Array.from({ length: 6 }, (_, i) => PEM(`O=Zscaler Inc, CN=Zscaler Root CA ${i}`)),
+      PEM('C=RU, O=AO KASPERSKY LAB, CN=Kaspersky Anti-Virus Personal Root Certificate'),
+    ]
+    const { suspects, vendors, count } = findInterceptionCerts(mixed)
+    assert.equal(count, 7, '计数应为全部命中')
+    assert.equal(suspects.length, 5, 'subjects 仍按展示上限截断')
+    // 用户去改哪个软件的设置，取决于这一条里有没有它的名字。
+    assert.deepEqual(vendors, ['Zscaler', 'Kaspersky'])
+    assert.ok(vendors.includes('Kaspersky'), '卡巴斯基排在展示上限之后被吞掉——诊断会指错方向')
+  })
+
+  it('摘要行点名的厂商数与计数所依据的命中面一致', () => {
+    const mixed = [
+      ...Array.from({ length: 6 }, (_, i) => PEM(`O=Zscaler Inc, CN=Zscaler Root CA ${i}`)),
+      PEM('C=RU, O=AO KASPERSKY LAB, CN=Kaspersky Anti-Virus Personal Root Certificate'),
+    ]
+    const report = detectTlsInterception({
+      bundled: () => ['bundled-a'],
+      system: () => mixed,
+      effective: () => ['bundled-a'],
+    })
+    const [headline] = formatTlsTrustLines(report)
+    assert.equal(report.suspectCount, 7)
+    assert.match(headline!, /7 条/)
+    assert.match(headline!, /Kaspersky/, '摘要行漏掉真正要用户去设置里排除的那个软件')
+  })
+
   it('subject 取 PEM 的第一行内容（不是 BEGIN 头）', () => {
     const { suspects } = findInterceptionCerts([
       `-----BEGIN CERTIFICATE-----\nO=ESET, spol. s r.o., CN=ESET SSL Filter CA\nMIIB...\n-----END CERTIFICATE-----`,
