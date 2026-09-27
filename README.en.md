@@ -995,10 +995,6 @@ Write only the fields you want to override; defaults are deep-merged. Full schem
     "enabled": true,
     "autoThreshold": 800000       // token threshold that triggers auto-compaction
   },
-  "cache": {
-    "enabled": true,              // master prefix-cache switch
-    "showHitRate": true           // show hit rate in the GlanceBar
-  },
   "tools": {
     "preset": "frontend"          // minimal | frontend (default) | full | taiyi
   },

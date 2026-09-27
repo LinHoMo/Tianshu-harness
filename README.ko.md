@@ -1108,10 +1108,6 @@ tianshu logs open desktop            # 打开 sidecar 日志目录（GUI 起不�
     "enabled": true,
     "autoThreshold": 800000       // 触发自动压缩的 token 阈值
   },
-  "cache": {
-    "enabled": true,              // 前缀缓存总开关
-    "showHitRate": true           // GlanceBar 显示命中率
-  },
   "tools": {
     "preset": "frontend"          // minimal | frontend（默认）| full | taiyi
   },

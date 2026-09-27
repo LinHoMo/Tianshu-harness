@@ -1104,10 +1104,6 @@ tianshu logs open desktop            # sidecar ログディレクトリを開く
     "enabled": true,
     "autoThreshold": 800000       // 自動圧縮をトリガーする token 閾値
   },
-  "cache": {
-    "enabled": true,              // プレフィックスキャッシュの総合スイッチ
-    "showHitRate": true           // GlanceBar にヒット率を表示
-  },
   "tools": {
     "preset": "frontend"          // minimal | frontend（デフォルト）| full | taiyi
   },
